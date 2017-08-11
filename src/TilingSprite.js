@@ -1,5 +1,3 @@
-import {default as TextureTransform} from './TextureTransform';
-
 const tempPoint = new Tiny.Point();
 
 /**
@@ -56,7 +54,7 @@ class TilingSprite extends Tiny.Sprite {
      *
      * @member {Tiny.TextureTransform}
      */
-    this.uvTransform = texture.transform || new TextureTransform(texture);
+    this.uvTransform = texture.transform || new Tiny.TextureTransform(texture);
 
     /**
      * Plugin that is responsible for rendering this element.
