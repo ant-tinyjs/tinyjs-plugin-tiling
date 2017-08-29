@@ -24,7 +24,7 @@
 
 引用 Tiny.js 源码
 ``` html
-<script src="http://tinyjs.net/libs/tiny.debug.js"></script>
+<script src="https://gw.alipayobjects.com/as/g/tiny/tiny/1.1.4/tiny.js"></script>
 ```
 ``` js
 var tiling = require('tinyjs-plugin-tiling');
