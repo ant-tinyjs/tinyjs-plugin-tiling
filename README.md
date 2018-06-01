@@ -4,7 +4,7 @@
 
 ## 查看demo
 
-http://tinyjs.net/#/plugins/tinyjs-plugin-tiling/demo
+http://tinyjs.net/plugins/tinyjs-plugin-tiling.html#demo
 
 ## 引用方法
 
@@ -24,7 +24,7 @@ http://tinyjs.net/#/plugins/tinyjs-plugin-tiling/demo
 
 引用 Tiny.js 源码
 ``` html
-<script src="https://gw.alipayobjects.com/as/g/tiny/tiny/1.1.5/tiny.js"></script>
+<script src="https://gw.alipayobjects.com/as/g/tiny/tiny/1.1.7/tiny.js"></script>
 ```
 ``` js
 var tiling = require('tinyjs-plugin-tiling');
@@ -34,8 +34,8 @@ var TilingSprite = tiling.TilingSprite;
 ```
 
 ## 依赖
-- `Tiny.js`: [Link](http://tinyjs.net/#/docs/api)
+- `Tiny.js`: [Link](http://tinyjs.net/api)
 
 ## API文档
 
-http://tinyjs.net/#/plugins/tinyjs-plugin-tiling/docs
+http://tinyjs.net/plugins/tinyjs-plugin-tiling.html#docs
