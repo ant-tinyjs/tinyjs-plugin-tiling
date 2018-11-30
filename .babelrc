@@ -1,8 +1,9 @@
 {
-  presets: [
-    ["es2015", { "loose": true }],
-  ],
-  plugins: [
-    "static-fs"
-  ]
+  "env": {
+    "test": {
+      "presets": [
+        ["env"], "stage-0"
+      ]
+    }
+  }
 }

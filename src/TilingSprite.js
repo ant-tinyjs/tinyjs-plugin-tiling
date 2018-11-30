@@ -123,6 +123,7 @@ class TilingSprite extends Tiny.Sprite {
     if (this.uvTransform) {
       this.uvTransform.texture = this._texture;
     }
+    this.cachedTint = 0xFFFFFF;
   }
 
   /**
@@ -150,7 +151,7 @@ class TilingSprite extends Tiny.Sprite {
    * Renders the object using the Canvas renderer
    *
    * @private
-   * @param {Tiny.CanvasRenderer} renderer - a reference to the canvas renderer
+   * @param {Tiny.CanvasRenderer} renderer - A reference to the canvas renderer
    */
   _renderCanvas(renderer) {
     const texture = this._texture;
@@ -168,8 +169,8 @@ class TilingSprite extends Tiny.Sprite {
     const modY = ((this.tilePosition.y / this.tileScale.y) % texture._frame.height) * baseTextureResolution;
 
     // create a nice shiny pattern!
-    // TODO this needs to be refreshed if texture changes..
-    if (!this._canvasPattern) {
+    if (this._textureID !== this._texture._updateID || this.cachedTint !== this.tint) {
+      this._textureID = this._texture._updateID;
       // cut an object from a spritesheet..
       const tempCanvas = new Tiny.CanvasRenderTarget(texture._frame.width,
         texture._frame.height,
@@ -177,15 +178,12 @@ class TilingSprite extends Tiny.Sprite {
 
       // Tint the tiling sprite
       if (this.tint !== 0xFFFFFF) {
-        if (this.cachedTint !== this.tint) {
-          this.cachedTint = this.tint;
-
-          this.tintedTexture = Tiny.CanvasTinter.getTintedTexture(this, this.tint);
-        }
+        this.tintedTexture = Tiny.CanvasTinter.getTintedTexture(this, this.tint);
         tempCanvas.context.drawImage(this.tintedTexture, 0, 0);
       } else {
-        tempCanvas.context.drawImage(baseTexture.source, -texture._frame.x, -texture._frame.y);
+        tempCanvas.context.drawImage(baseTexture.source, -texture._frame.x * baseTextureResolution, -texture._frame.y * baseTextureResolution);
       }
+      this.cachedTint = this.tint;
       this._canvasPattern = tempCanvas.context.createPattern(tempCanvas.canvas, 'repeat');
     }
 
@@ -250,7 +248,7 @@ class TilingSprite extends Tiny.Sprite {
       this._bounds.minX = this._width * -this._anchor._x;
       this._bounds.minY = this._height * -this._anchor._y;
       this._bounds.maxX = this._width * (1 - this._anchor._x);
-      this._bounds.maxY = this._height * (1 - this._anchor._x);
+      this._bounds.maxY = this._height * (1 - this._anchor._y);
 
       if (!rect) {
         if (!this._localBoundsRect) {
@@ -269,7 +267,7 @@ class TilingSprite extends Tiny.Sprite {
   /**
    * Checks if a point is inside this tiling sprite.
    *
-   * @param {Tiny.Point} point - the point to check
+   * @param {Tiny.Point} point - The point to check
    * @return {boolean} Whether or not the sprite contains the point.
    */
   containsPoint(point) {
@@ -279,10 +277,10 @@ class TilingSprite extends Tiny.Sprite {
     const height = this._height;
     const x1 = -width * this.anchor._x;
 
-    if (tempPoint.x > x1 && tempPoint.x < x1 + width) {
+    if (tempPoint.x >= x1 && tempPoint.x < x1 + width) {
       const y1 = -height * this.anchor._y;
 
-      if (tempPoint.y > y1 && tempPoint.y < y1 + height) {
+      if (tempPoint.y >= y1 && tempPoint.y < y1 + height) {
         return true;
       }
     }
@@ -293,10 +291,8 @@ class TilingSprite extends Tiny.Sprite {
   /**
    * Destroys this sprite and optionally its texture and children
    *
-   * @param {object|boolean} [options] - Options parameter. A boolean will act as if all options
-   *  have been set to that value
-   * @param {boolean} [options.children=false] - if set to true, all the children will have their destroy
-   *      method called as well. 'options' will be passed on to those calls.
+   * @param {object|boolean} [options] - Options parameter. A boolean will act as if all options have been set to that value
+   * @param {boolean} [options.children=false] - If set to true, all the children will have their destroy method called as well. 'options' will be passed on to those calls.
    * @param {boolean} [options.texture=false] - Should it destroy the current texture of the sprite as well
    * @param {boolean} [options.baseTexture=false] - Should it destroy the base texture of the sprite as well
    */
@@ -313,8 +309,8 @@ class TilingSprite extends Tiny.Sprite {
    *
    * @static
    * @param {number|string|Tiny.BaseTexture|HTMLCanvasElement|HTMLVideoElement} source - Source to create texture from
-   * @param {number} width - the width of the tiling sprite
-   * @param {number} height - the height of the tiling sprite
+   * @param {number} width - The width of the tiling sprite
+   * @param {number} height - The height of the tiling sprite
    * @return {Tiny.Texture} The newly created texture
    */
   static from(source, width, height) {
@@ -327,8 +323,8 @@ class TilingSprite extends Tiny.Sprite {
    *
    * @static
    * @param {string} frameId - The frame Id of the texture in the cache
-   * @param {number} width - the width of the tiling sprite
-   * @param {number} height - the height of the tiling sprite
+   * @param {number} width - The width of the tiling sprite
+   * @param {number} height - The height of the tiling sprite
    * @return {Tiny.TilingSprite} A new TilingSprite using a texture from the texture cache matching the frameId
    */
   static fromFrame(frameId, width, height) {
@@ -347,11 +343,10 @@ class TilingSprite extends Tiny.Sprite {
    *
    * @static
    * @param {string} imageId - The image url of the texture
-   * @param {number} width - the width of the tiling sprite
-   * @param {number} height - the height of the tiling sprite
-   * @param {boolean} [crossorigin] - if you want to specify the cross-origin parameter
-   * @param {number} [scaleMode=Tiny.SCALE_MODE] - if you want to specify the scale mode,
-   *  see {@link Tiny.SCALE_MODES} for possible values
+   * @param {number} width - The width of the tiling sprite
+   * @param {number} height - The height of the tiling sprite
+   * @param {boolean} [crossorigin] - If you want to specify the cross-origin parameter
+   * @param {number} [scaleMode=Tiny.SCALE_MODE] - If you want to specify the scale mode, see {@link Tiny.SCALE_MODES} for possible values
    * @return {Tiny.TilingSprite} A new TilingSprite using a texture from the texture cache matching the image id
    */
   static fromImage(imageId, width, height, crossorigin, scaleMode) {

@@ -1,8 +1,46 @@
-import {readFileSync} from 'fs';
-import {join} from 'path';
-
 const tempMat = new Tiny.Matrix();
-const tempArray = new Float32Array(4);
+
+const tilingSprite = {
+  frag: `varying vec2 vTextureCoord;
+
+uniform sampler2D uSampler;
+uniform vec4 uColor;
+uniform mat3 uMapCoord;
+uniform vec4 uClampFrame;
+uniform vec2 uClampOffset;
+
+void main(void){
+  vec2 coord = mod(vTextureCoord - uClampOffset, vec2(1.0, 1.0)) + uClampOffset;
+  coord = (uMapCoord * vec3(coord, 1.0)).xy;
+  coord = clamp(coord, uClampFrame.xy, uClampFrame.zw);
+
+  vec4 sample = texture2D(uSampler, coord);
+  gl_FragColor = sample * uColor;
+}`,
+  vert: `attribute vec2 aVertexPosition;
+attribute vec2 aTextureCoord;
+
+uniform mat3 projectionMatrix;
+uniform mat3 translationMatrix;
+uniform mat3 uTransform;
+
+varying vec2 vTextureCoord;
+
+void main(void) {
+  gl_Position = vec4((projectionMatrix * translationMatrix * vec3(aVertexPosition, 1.0)).xy, 0.0, 1.0);
+  vTextureCoord = (uTransform * vec3(aTextureCoord, 1.0)).xy;
+}`,
+  simpleFrag: `varying vec2 vTextureCoord;
+
+uniform sampler2D uSampler;
+uniform vec4 uColor;
+
+void main(void)
+{
+  vec4 sample = texture2D(uSampler, vTextureCoord);
+  gl_FragColor = sample * uColor;
+}`,
+};
 
 /**
  * WebGL renderer plugin for tiling sprites
@@ -12,11 +50,10 @@ const tempArray = new Float32Array(4);
  * @extends Tiny.ObjectRenderer
  */
 class TilingSpriteRenderer extends Tiny.ObjectRenderer {
-
   /**
    * constructor for renderer
    *
-   * @param {WebGLRenderer} renderer The renderer this tiling awesomeness works for.
+   * @param {WebGLRenderer} renderer - The renderer this tiling awesomeness works for.
    */
   constructor(renderer) {
     super(renderer);
@@ -35,11 +72,11 @@ class TilingSpriteRenderer extends Tiny.ObjectRenderer {
     const gl = this.renderer.gl;
 
     this.shader = new Tiny.Shader(gl,
-      readFileSync(join(__dirname, './tilingSprite.vert'), 'utf8'),
-      readFileSync(join(__dirname, './tilingSprite.frag'), 'utf8'));
+      tilingSprite.vert,
+      tilingSprite.frag);
     this.simpleShader = new Tiny.Shader(gl,
-      readFileSync(join(__dirname, './tilingSprite.vert'), 'utf8'),
-      readFileSync(join(__dirname, './tilingSprite_simple.frag'), 'utf8'));
+      tilingSprite.vert,
+      tilingSprite.simpleFrag);
 
     this.renderer.bindVao(null);
     this.quad = new Tiny.Quad(gl, this.renderer.state.attribState);
@@ -48,7 +85,7 @@ class TilingSpriteRenderer extends Tiny.ObjectRenderer {
 
   /**
    *
-   * @param {Tiny.extras.TilingSprite} ts tilingSprite to be rendered
+   * @param {Tiny.extras.TilingSprite} ts - tilingSprite to be rendered
    */
   render(ts) {
     const renderer = this.renderer;
@@ -125,17 +162,12 @@ class TilingSpriteRenderer extends Tiny.ObjectRenderer {
     }
 
     shader.uniforms.uTransform = tempMat.toArray(true);
-
-    const color = tempArray;
-
-    Tiny.hex2rgb(ts.tint, color);
-    color[3] = ts.worldAlpha;
-    shader.uniforms.uColor = color;
+    shader.uniforms.uColor = Tiny.premultiplyTintToRgba(ts.tint, ts.worldAlpha, shader.uniforms.uColor, baseTex.premultipliedAlpha);
     shader.uniforms.translationMatrix = ts.transform.worldTransform.toArray(true);
 
     shader.uniforms.uSampler = renderer.bindTexture(tex);
 
-    renderer.setBlendMode(ts.blendMode);
+    renderer.setBlendMode(Tiny.correctBlendMode(ts.blendMode, baseTex.premultipliedAlpha));
 
     quad.vao.draw(this.renderer.gl.TRIANGLES, 6, 0);
   }

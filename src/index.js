@@ -12,5 +12,5 @@
 /**
  * @namespace Tiny.tiling
  */
-export {default as TilingSprite} from './TilingSprite';
-export {default as TilingSpriteRenderer} from './webgl/TilingSpriteRenderer';
+export { default as TilingSprite } from './TilingSprite';
+export { default as TilingSpriteRenderer } from './webgl/TilingSpriteRenderer';
