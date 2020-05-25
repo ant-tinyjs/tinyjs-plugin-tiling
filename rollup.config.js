@@ -9,7 +9,7 @@ import progress from 'rollup-plugin-progress';
 const pkg = require('./package.json');
 
 const production = process.env.BUILD === 'production';
-const file = production ? `dist/index.js` : `dist/index.debug.js`;
+const file = production ? `index.js` : `index.debug.js`;
 const banner = `/*!
  * Name: ${pkg.name}
  * Description: ${pkg.description}

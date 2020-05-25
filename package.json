@@ -1,6 +1,6 @@
 {
   "name": "tinyjs-plugin-tiling",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": "yiiqii",
   "description": "A fast way of rendering a tiling image",
   "keywords": [
@@ -11,9 +11,10 @@
     "type": "git",
     "url": "https://github.com/ant-tinyjs/tinyjs-plugin-tiling.git"
   },
-  "main": "dist/index.debug.js",
+  "main": "index.debug.js",
   "files": [
-    "dist",
+    "index.js",
+    "index.debug.js",
     "src",
     "demo",
     "test"
